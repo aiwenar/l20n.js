@@ -593,6 +593,12 @@ class ParseContext {
 
     if ((cc >= 48 && cc <= 57) || cc === 45) {
       literal = this.getNumber();
+    } else if (cc === 36) { // $
+      this._index++;
+      literal = {
+        type: 'ext',
+        name: this.getIdentifier(),
+      };
     } else {
       literal = this.getKeyword();
     }

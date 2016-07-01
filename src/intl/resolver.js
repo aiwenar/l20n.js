@@ -54,16 +54,30 @@ function* MemberExpression({obj, key}) {
   }
 
   const { ctx } = yield ask();
-  const keyword = yield* Value(key);
+
+  const selector = yield* Value(key);
+  if (selector instanceof FTLNone) {
+    return {
+      val: yield* Entity(entity)
+    };
+  }
 
   for (let member of entity.traits) {
     const memberKey = yield* Value(member.key);
-    if (keyword.match(ctx, memberKey)) {
+
+    if (memberKey instanceof FTLNumber &&
+        selector instanceof FTLNumber &&
+        memberKey.valueOf() === selector.valueOf()) {
+      return member;
+    }
+
+    if (memberKey instanceof FTLKeyword &&
+        memberKey.match(ctx, selector)) {
       return member;
     }
   }
 
-  yield tell(new ReferenceError(`Unknown trait: ${keyword.toString(ctx)}`));
+  yield tell(new ReferenceError(`Unknown trait: ${selector.toString(ctx)}`));
   return {
     val: yield* Entity(entity)
   };
